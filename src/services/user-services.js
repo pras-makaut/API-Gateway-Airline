@@ -1,4 +1,4 @@
-
+const {Auth} = require('../utils/common')
 const {UserRepository} = require('../repositories');
 const db = require('../models');
 const {ServerConfig} = require('../config')
@@ -26,7 +26,30 @@ async function createUser(data){
         
     }
 }
+async function signin(data){
+    try {
+        const user = await userPepository.getUserByEmail(data.email);
+        if(!user){
+            throw new AppError('No user found with given email',StatusCodes.NOT_FOUND);
+        } 
+        const passwordMatch = await Auth.checkPasword(data.password,user.password);
+        
+        if(!passwordMatch){
+            throw new AppError('Password Does not match',StatusCodes.BAD_REQUEST);
+        }
+        const jwt_token = Auth.createToken({id:user.id,email:user.email});
+        return jwt_token;
+        
+    } catch (error) {
+        if(error instanceof AppError) throw error;
+        console.log(error);
+        throw new AppError('something went wrong',StatusCodes.INTERNAL_SERVER_ERROR);   
+    }
+}
+
+
 
 module.exports = {
-    createUser
+    createUser,
+    signin
 }
