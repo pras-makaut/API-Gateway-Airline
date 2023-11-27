@@ -1,16 +1,18 @@
-const {Auth} = require('../utils/common')
-const {UserRepository} = require('../repositories');
+const {Auth,Enums} = require('../utils/common')
+const {UserRepository,RoleRipository} = require('../repositories');
 const db = require('../models');
 const {ServerConfig} = require('../config')
 const AppError = require('../utils/errors/app-error');
 const { StatusCodes } = require('http-status-codes');
 
 const userPepository = new UserRepository();
-
+const rolePepository = new RoleRipository();
 async function createUser(data){
 
     try {
         const user = await userPepository.createData(data);
+        const role = await rolePepository.getRoleByName(Enums.USER_ROLES_ENUMS.CUSTOMER);
+        user.addRole(role);
         return user;
         
     } catch (error) {
